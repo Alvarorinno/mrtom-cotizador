@@ -743,6 +743,39 @@
         </div>
       </div>
 
+      <!-- Costos operativos directos -->
+      <div class="cost-area">
+        <div class="cost-area-title">Costos operativos directos</div>
+        <table class="cost-table">
+          <thead>
+            <tr>
+              <th style="width:38%">Ítem</th>
+              <th style="width:20%">Cantidad</th>
+              <th style="width:22%">Tarifa</th>
+              <th style="width:20%">Costo/mes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Remuneraciones <span style="font-size:11px;color:var(--muted)">(auto desde add-on)</span></td>
+              <td style="font-size:12px;color:var(--navy)" id="op-remun-qty">0 trabajadores</td>
+              <td style="font-size:12px;color:var(--muted)">0,016 UF/trabajador</td>
+              <td><strong id="op-remun-cost">$0</strong><div style="font-size:11px;color:var(--muted)" id="op-remun-uf"></div></td>
+            </tr>
+            <tr>
+              <td>Movimientos cuenta corriente</td>
+              <td><input type="number" id="op-mov" placeholder="0" min="0" step="1" oninput="calcCosts()" /></td>
+              <td style="font-size:12px;color:var(--muted)">0,0115 UF/transacción</td>
+              <td><strong id="op-mov-cost">$0</strong><div style="font-size:11px;color:var(--muted)" id="op-mov-uf"></div></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="cost-subtotal">
+          Subtotal operativo/mes: <strong id="op-subtotal">$0</strong>
+          <span class="cost-subtotal-uf" id="op-subtotal-uf"></span>
+        </div>
+      </div>
+
       <!-- Resultado: margen bruto -->
       <div class="margin-box">
         <div class="margin-col">
@@ -1296,8 +1329,34 @@ function calcCosts() {
   const caTotalHrs = hAsesoria + hTrabajo;
   const caCostCLP  = caHrCost * caTotalHrs;
 
+  // ── Costos operativos directos ────────────────────────────────
+  const TARIFA_REMUN = 0.016;    // UF por trabajador
+  const TARIFA_MOV   = 0.0115;   // UF por transacción
+
+  // Remuneraciones: lee qty del add-on (siempre visible en el DOM)
+  const qtyRemun      = parseFloat(document.getElementById('qty-remun')?.value) || 0;
+  const remunCostUF   = qtyRemun * TARIFA_REMUN;
+  const remunCostCLP  = remunCostUF * ufVal;
+
+  // Movimientos cuenta corriente
+  const qtyMov        = getNum('op-mov');
+  const movCostUF     = qtyMov * TARIFA_MOV;
+  const movCostCLP    = movCostUF * ufVal;
+
+  const opSubtotalCLP = remunCostCLP + movCostCLP;
+  const opSubtotalUF  = remunCostUF + movCostUF;
+
+  // UI operativos
+  setEl('op-remun-qty',  `${qtyRemun} trabajador${qtyRemun !== 1 ? 'es' : ''}`);
+  setEl('op-remun-cost', `$${fmt(Math.round(remunCostCLP))}`);
+  setEl('op-remun-uf',   remunCostUF > 0 ? `${fmtUF(remunCostUF)} UF` : '');
+  setEl('op-mov-cost',   `$${fmt(Math.round(movCostCLP))}`);
+  setEl('op-mov-uf',     movCostUF > 0 ? `${fmtUF(movCostUF)} UF` : '');
+  setEl('op-subtotal',   `$${fmt(Math.round(opSubtotalCLP))}`);
+  setEl('op-subtotal-uf', opSubtotalUF > 0 ? `${fmtUF(opSubtotalUF)} UF/mes` : '');
+
   // ── Totales ───────────────────────────────────────────────────
-  const totalCostCLP = ccCostCLP + caCostCLP;
+  const totalCostCLP = ccCostCLP + caCostCLP + opSubtotalCLP;
   const totalCostUF  = ufVal > 0 ? totalCostCLP / ufVal : 0;
   const quotedCLP    = currentTotalUF * ufVal;
   const marginCLP    = quotedCLP - totalCostCLP;
@@ -1355,7 +1414,7 @@ function resetForm() {
   renderSpecialItems();
   currentTotalUF   = 0;
   currentQuoteCode = null;
-  ['cc-rate','cc-h-contab','cc-h-f29','cc-h-reunion','ca-rate','ca-h-asesoria','ca-h-trabajo'].forEach(id => {
+  ['cc-rate','cc-h-contab','cc-h-f29','cc-h-reunion','ca-rate','ca-h-asesoria','ca-h-trabajo','op-mov'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
   calcCosts();
