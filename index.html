@@ -372,30 +372,30 @@
     .print-total-uf { color: var(--white); font-size: 36px; font-weight: 800; }
     .print-total-uf small { font-size: 14px; color: #8BA3B8; }
     .print-total-clp { color: #8BA3B8; font-size: 15px; margin-top: 4px; }
-    .print-plan-features { margin-top: 16px; padding: 16px 20px; background: var(--cream); border-radius: 10px; }
+    .print-plan-features { margin-top: 10px; padding: 10px 16px; background: var(--cream); border-radius: 8px; }
     .print-plan-features-section-title {
-      font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
-      color: var(--gold); margin: 12px 0 6px;
+      font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--gold); margin: 8px 0 4px;
     }
     .print-plan-features-section-title:first-child { margin-top: 0; }
     .print-plan-feature-row {
-      display: flex; gap: 9px; align-items: flex-start;
-      font-size: 13px; color: #374151; padding: 5px 0;
+      display: flex; gap: 7px; align-items: flex-start;
+      font-size: 11px; color: #374151; padding: 3px 0;
       border-bottom: 1px solid #EAE6DF;
     }
     .print-plan-feature-row:last-child { border-bottom: none; }
-    .print-plan-feature-check { color: var(--gold); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
-    .print-notes { margin-top: 24px; }
-    .print-notes h3 { font-size: 11px; letter-spacing: 3px; color: var(--gold); font-weight: 700; margin-bottom: 10px; }
-    .print-notes p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .print-plan-feature-check { color: var(--gold); font-weight: 700; flex-shrink: 0; }
+    .print-notes { margin-top: 12px; }
+    .print-notes h3 { font-size: 10px; letter-spacing: 3px; color: var(--gold); font-weight: 700; margin-bottom: 6px; }
+    .print-notes p { font-size: 11px; color: var(--muted); line-height: 1.5; }
     .print-footer {
       background: var(--cream);
-      padding: 16px 36px;
+      padding: 10px 28px;
       display: flex; justify-content: space-between; align-items: center;
       border-top: 1px solid var(--border);
     }
-    .print-footer-text { font-size: 12px; color: var(--muted); }
-    .print-validity { font-size: 12px; color: var(--navy); font-weight: 600; }
+    .print-footer-text { font-size: 11px; color: var(--muted); }
+    .print-validity { font-size: 11px; color: var(--navy); font-weight: 600; }
 
     /* ── COST ANALYSIS (internal) ──────────────────────────────── */
     .cost-section {
@@ -465,15 +465,46 @@
     .margin-warn { color: #FCD34D; }
     .margin-bad  { color: #F87171; }
 
+    @page {
+      size: A4;
+      margin: 0;   /* elimina header/footer del browser (URL, fecha, nº página) */
+    }
     @media print {
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-      body { background: white; margin: 0; padding: 0; }
+      body { background: white; margin: 0; padding: 0; font-size: 11px; }
       header { display: none !important; }
       main { padding: 0 !important; max-width: 100% !important; }
       main > *:not(#print-section) { display: none !important; }
       #print-section { margin: 0; padding: 0; }
       #print-area { display: block !important; border: none !important; border-radius: 0 !important; margin: 0 !important; box-shadow: none !important; }
       .no-print { display: none !important; }
+
+      /* Header más compacto */
+      .print-header { padding: 14px 28px; }
+      .print-body { padding: 14px 28px; }
+
+      /* Cliente */
+      .print-client { margin-bottom: 10px; }
+      .print-client h3 { margin-bottom: 6px; }
+      .print-client-grid { gap: 10px; }
+      .print-client-item .field-value { font-size: 13px; }
+
+      /* Plan box */
+      .print-plan-box { padding: 12px 18px; margin-bottom: 10px; }
+      .print-plan-name { font-size: 16px; }
+      .print-plan-price { font-size: 22px; }
+
+      /* Add-ons */
+      .print-addon-row { padding: 6px 0; font-size: 12px; }
+      .print-addons h3 { margin-bottom: 8px; }
+
+      /* Total box */
+      .print-total-box { padding: 14px 20px; margin-top: 12px; }
+      .print-total-uf { font-size: 26px; }
+      #pr-annual-uf { font-size: 17px; }
+
+      /* Resumen reunión */
+      #pr-resumen-text { font-size: 11px; padding: 8px 12px; }
     }
   </style>
 </head>
@@ -759,7 +790,7 @@
             <tr>
               <td>Remuneraciones <span style="font-size:11px;color:var(--muted)">(auto desde add-on)</span></td>
               <td style="font-size:12px;color:var(--navy)" id="op-remun-qty">0 trabajadores</td>
-              <td style="font-size:12px;color:var(--muted)">0,016 UF/trabajador</td>
+              <td style="font-size:12px;color:var(--muted)">0,16 UF/trabajador</td>
               <td><strong id="op-remun-cost">$0</strong><div style="font-size:11px;color:var(--muted)" id="op-remun-uf"></div></td>
             </tr>
             <tr>
@@ -886,7 +917,7 @@
         </div>
       </div>
       <div class="print-footer">
-        <div class="print-footer-text">www.mrtom.cl · contacto@mrtom.cl</div>
+        <div class="print-footer-text">© Derechos reservados de MrTom SpA</div>
         <div class="print-validity">UF utilizada: $<span id="pr-uf-val">—</span></div>
       </div>
     </div>
@@ -1330,7 +1361,7 @@ function calcCosts() {
   const caCostCLP  = caHrCost * caTotalHrs;
 
   // ── Costos operativos directos ────────────────────────────────
-  const TARIFA_REMUN = 0.016;    // UF por trabajador
+  const TARIFA_REMUN = 0.16;     // UF por trabajador
   const TARIFA_MOV   = 0.0115;   // UF por transacción
 
   // Remuneraciones: lee qty del add-on (siempre visible en el DOM)
