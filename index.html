@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MrTom · Cotizador Interno</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:   #0D1B2A;
+      --navy2:  #1A2E44;
+      --gold:   #C9A84C;
+      --gold-l: #F2E8C4;
+      --cream:  #FAF7F2;
+      --white:  #FFFFFF;
+      --muted:  #6B7280;
+      --border: #E2DDD6;
+      --green:  #166534;
+      --green-l:#DCFCE7;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--cream);
+      color: var(--navy);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ─────────────────────────────────────────────────── */
+    header {
+      background: var(--navy);
+      padding: 16px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo-area { display: flex; align-items: center; gap: 14px; }
+    .logo-sep { width: 1px; height: 40px; background: rgba(255,255,255,0.15); margin: 0 4px; }
+    .logo-wordmark { display: flex; flex-direction: column; justify-content: center; }
+    .logo-mr { font-size: 10px; font-weight: 700; letter-spacing: 3px; color: var(--gold); line-height: 1; }
+    .logo-tom { font-size: 22px; font-weight: 700; color: var(--white); font-family: Georgia, 'Times New Roman', serif; line-height: 1.1; letter-spacing: -0.3px; }
+    .header-badge {
+      background: var(--gold-l);
+      color: var(--navy);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 14px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── MAIN LAYOUT ────────────────────────────────────────────── */
+    main { max-width: 1000px; margin: 0 auto; padding: 36px 24px 80px; }
+
+    section { margin-bottom: 36px; }
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    /* ── CLIENT INFO ────────────────────────────────────────────── */
+    .client-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+    }
+    label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+    input[type="text"], input[type="number"], input[type="date"] {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      background: var(--white);
+      color: var(--navy);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus { border-color: var(--gold); }
+
+    /* ── UF BOX ─────────────────────────────────────────────────── */
+    .uf-box {
+      background: var(--navy);
+      border-radius: 10px;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+    .uf-box label { color: var(--gold); margin: 0; font-size: 11px; letter-spacing: 1px; white-space: nowrap; }
+    .uf-box input {
+      background: var(--navy2);
+      border-color: #2E4460;
+      color: var(--white);
+      width: 140px;
+    }
+    .uf-box input:focus { border-color: var(--gold); }
+    .uf-note { color: #8BA3B8; font-size: 12px; }
+
+    /* ── PLAN CARDS ─────────────────────────────────────────────── */
+    .plans-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+    .plan-card {
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 22px 20px;
+      cursor: pointer;
+      background: var(--white);
+      transition: all 0.2s;
+      position: relative;
+    }
+    .plan-card:hover { border-color: var(--gold); }
+    .plan-card.selected {
+      border-color: var(--gold);
+      background: #FFFCF2;
+      box-shadow: 0 0 0 3px rgba(201,168,76,0.15);
+    }
+    .plan-card input[type="radio"] { display: none; }
+    .plan-badge {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .plan-card.selected .plan-badge { color: var(--gold); }
+    .plan-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 6px;
+    }
+    .plan-price {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: 4px;
+    }
+    .plan-price span { font-size: 14px; font-weight: 500; color: var(--muted); }
+    .plan-uf-equiv {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+    .plan-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 14px 0;
+    }
+    .plan-features { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+    .plan-features li { font-size: 13px; color: var(--muted); display: flex; gap: 8px; }
+    .plan-features li::before { content: '✓'; color: var(--gold); font-weight: 700; flex-shrink: 0; }
+    .plan-check {
+      position: absolute;
+      top: 16px; right: 16px;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      display: grid; place-items: center;
+      transition: all 0.2s;
+    }
+    .plan-card.selected .plan-check {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: white;
+      font-size: 12px;
+    }
+    .plan-card.selected .plan-check::after { content: '✓'; }
+
+    /* ── ADD-ONS ────────────────────────────────────────────────── */
+    .addon-list { display: flex; flex-direction: column; gap: 10px; }
+    .addon-row {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      display: grid;
+      grid-template-columns: 24px 1fr auto auto;
+      align-items: center;
+      gap: 14px;
+      transition: border-color 0.2s;
+    }
+    .addon-row.active { border-color: var(--gold); background: #FFFCF2; }
+    .addon-row input[type="checkbox"] {
+      width: 18px; height: 18px;
+      accent-color: var(--gold);
+      cursor: pointer;
+    }
+    .addon-info { }
+    .addon-name { font-size: 14px; font-weight: 600; color: var(--navy); }
+    .addon-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .addon-qty {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+    }
+    .addon-qty label { font-size: 10px; color: var(--muted); margin: 0; }
+    .addon-qty input {
+      width: 64px; text-align: center;
+      padding: 6px 8px; font-size: 14px;
+      border-radius: 6px;
+    }
+    .addon-price-col {
+      text-align: right; min-width: 90px;
+    }
+    .addon-uf { font-size: 14px; font-weight: 700; color: var(--navy); }
+    .addon-clp { font-size: 11px; color: var(--muted); }
+    .addon-price-edit {
+      display: flex; align-items: center; gap: 4px;
+    }
+    .addon-price-edit input {
+      width: 60px; padding: 5px 6px; font-size: 13px;
+      border-radius: 6px; text-align: center;
+    }
+    .addon-price-edit span { font-size: 12px; color: var(--muted); }
+
+    /* ── SUMMARY ────────────────────────────────────────────────── */
+    .summary-box {
+      background: var(--navy);
+      border-radius: 16px;
+      padding: 28px 32px;
+      color: var(--white);
+    }
+    .summary-title { font-size: 11px; letter-spacing: 3px; color: var(--gold); font-weight: 700; margin-bottom: 20px; }
+    .summary-line {
+      display: flex; justify-content: space-between; align-items: baseline;
+      padding: 8px 0;
+      border-bottom: 1px solid #1E3248;
+      font-size: 14px;
+    }
+    .summary-line:last-of-type { border-bottom: none; }
+    .summary-line .lbl { color: #8BA3B8; }
+    .summary-line .val { color: var(--white); font-weight: 600; }
+    .summary-total {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #2E4460;
+      display: flex; justify-content: space-between; align-items: flex-end;
+    }
+    .total-label { font-size: 13px; color: var(--gold); font-weight: 700; letter-spacing: 1px; }
+    .total-uf { font-size: 38px; font-weight: 800; color: var(--white); line-height: 1; }
+    .total-clp { font-size: 16px; color: #8BA3B8; margin-top: 4px; }
+    .total-period { font-size: 12px; color: #8BA3B8; }
+
+    /* ── CUSTOM ITEMS ──────────────────────────────────────────── */
+    .custom-items-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+    .custom-item-row {
+      display: grid;
+      grid-template-columns: 1fr 80px 100px 36px;
+      gap: 10px;
+      align-items: center;
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      transition: border-color 0.2s;
+    }
+    .custom-item-row:focus-within { border-color: var(--gold); }
+    .custom-item-row input[type="text"] { font-size: 14px; }
+    .custom-item-row input[type="number"] { text-align: center; }
+    .custom-item-uf-wrap { display: flex; align-items: center; gap: 6px; }
+    .custom-item-uf-wrap input { flex: 1; }
+    .custom-item-uf-wrap span { font-size: 12px; color: var(--muted); white-space: nowrap; }
+    .btn-del {
+      width: 32px; height: 32px;
+      border: none; border-radius: 8px;
+      background: #FEE2E2; color: #DC2626;
+      font-size: 16px; cursor: pointer; display: grid; place-items: center;
+      transition: background 0.15s;
+      padding: 0;
+    }
+    .btn-del:hover { background: #FCA5A5; }
+    .btn-add-item {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 8px 18px; border-radius: 8px;
+      border: 1.5px dashed var(--gold); background: transparent;
+      color: var(--gold); font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .btn-add-item:hover { background: var(--gold-l); }
+
+    /* ── NOTES ─────────────────────────────────────────────────── */
+    textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      background: var(--white);
+      color: var(--navy);
+      resize: vertical;
+      min-height: 80px;
+      font-family: inherit;
+      outline: none;
+    }
+    textarea:focus { border-color: var(--gold); }
+
+    /* ── ACTIONS ────────────────────────────────────────────────── */
+    .actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 28px; }
+    .btn {
+      padding: 12px 28px; border-radius: 10px; font-size: 14px;
+      font-weight: 600; cursor: pointer; border: none; transition: all 0.2s;
+    }
+    .btn-primary { background: var(--navy); color: var(--white); }
+    .btn-primary:hover { background: #0a141f; }
+    .btn-outline { background: transparent; border: 2px solid var(--navy); color: var(--navy); }
+    .btn-outline:hover { background: var(--navy); color: var(--white); }
+
+    /* ── PRINT PREVIEW ──────────────────────────────────────────── */
+    #print-area {
+      display: none;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-top: 32px;
+    }
+    #print-area.visible { display: block; }
+    .print-header {
+      background: var(--navy);
+      padding: 28px 36px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .print-logo { display: flex; align-items: center; gap: 14px; }
+    .print-logo-sep { width: 1px; height: 44px; background: rgba(255,255,255,0.15); margin: 0 2px; }
+    .print-logo-wordmark { display: flex; flex-direction: column; justify-content: center; }
+    .print-logo-mr { font-size: 10px; font-weight: 700; letter-spacing: 3px; color: var(--gold); line-height: 1; }
+    .print-logo-tom { font-size: 24px; font-weight: 700; color: var(--white); font-family: Georgia, 'Times New Roman', serif; line-height: 1.1; letter-spacing: -0.3px; }
+    .print-meta { text-align: right; color: #8BA3B8; font-size: 13px; }
+    .print-body { padding: 32px 36px; }
+    .print-client { margin-bottom: 28px; }
+    .print-client h3 { font-size: 11px; letter-spacing: 3px; color: var(--gold); font-weight: 700; margin-bottom: 12px; }
+    .print-client-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .print-client-item .field-label { font-size: 11px; color: var(--muted); margin-bottom: 3px; }
+    .print-client-item .field-value { font-size: 15px; font-weight: 600; color: var(--navy); }
+    .print-plan-box {
+      background: var(--cream);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .print-plan-name { font-size: 20px; font-weight: 700; color: var(--navy); }
+    .print-plan-level { font-size: 11px; color: var(--gold); font-weight: 700; letter-spacing: 2px; margin-bottom: 6px; }
+    .print-plan-price { font-size: 28px; font-weight: 800; color: var(--navy); }
+    .print-plan-price small { font-size: 13px; color: var(--muted); font-weight: 400; }
+    .print-addons h3 { font-size: 11px; letter-spacing: 3px; color: var(--gold); font-weight: 700; margin-bottom: 14px; }
+    .print-addon-row {
+      display: flex; justify-content: space-between;
+      padding: 10px 0; border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+    .print-addon-row:last-child { border-bottom: none; }
+    .print-addon-name { color: var(--navy); font-weight: 500; }
+    .print-addon-price { color: var(--muted); text-align: right; }
+    .print-total-box {
+      background: var(--navy);
+      border-radius: 12px;
+      padding: 24px 28px;
+      margin-top: 28px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .print-total-label { color: var(--gold); font-size: 12px; font-weight: 700; letter-spacing: 2px; }
+    .print-total-uf { color: var(--white); font-size: 36px; font-weight: 800; }
+    .print-total-uf small { font-size: 14px; color: #8BA3B8; }
+    .print-total-clp { color: #8BA3B8; font-size: 15px; margin-top: 4px; }
+    .print-plan-features { margin-top: 16px; padding: 16px 20px; background: var(--cream); border-radius: 10px; }
+    .print-plan-features-section-title {
+      font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--gold); margin: 12px 0 6px;
+    }
+    .print-plan-features-section-title:first-child { margin-top: 0; }
+    .print-plan-feature-row {
+      display: flex; gap: 9px; align-items: flex-start;
+      font-size: 13px; color: #374151; padding: 5px 0;
+      border-bottom: 1px solid #EAE6DF;
+    }
+    .print-plan-feature-row:last-child { border-bottom: none; }
+    .print-plan-feature-check { color: var(--gold); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+    .print-notes { margin-top: 24px; }
+    .print-notes h3 { font-size: 11px; letter-spacing: 3px; color: var(--gold); font-weight: 700; margin-bottom: 10px; }
+    .print-notes p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .print-footer {
+      background: var(--cream);
+      padding: 16px 36px;
+      display: flex; justify-content: space-between; align-items: center;
+      border-top: 1px solid var(--border);
+    }
+    .print-footer-text { font-size: 12px; color: var(--muted); }
+    .print-validity { font-size: 12px; color: var(--navy); font-weight: 600; }
+
+    /* ── COST ANALYSIS (internal) ──────────────────────────────── */
+    .cost-section {
+      border: 2px dashed #D4C9B8;
+      border-radius: 14px;
+      padding: 28px;
+      background: #FFFEF9;
+    }
+    .cost-section-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 3px;
+      text-transform: uppercase; color: var(--muted);
+      margin-bottom: 20px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .cost-section-label::before {
+      content: '⚙'; font-size: 13px;
+    }
+    .cost-area { margin-bottom: 22px; }
+    .cost-area-title {
+      font-size: 11px; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--navy);
+      margin-bottom: 10px; padding-bottom: 6px;
+      border-bottom: 1.5px solid var(--border);
+    }
+    .cost-table { width: 100%; border-collapse: collapse; }
+    .cost-table th {
+      font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+      text-transform: uppercase; color: var(--muted);
+      padding: 0 10px 8px; text-align: left;
+    }
+    .cost-table th:not(:first-child) { text-align: right; }
+    .cost-table td {
+      padding: 6px 10px; font-size: 13px; color: var(--navy);
+      border-top: 1px solid var(--border);
+    }
+    .cost-table td:not(:first-child) { text-align: right; }
+    .cost-table td input[type="number"] {
+      width: 90px; padding: 5px 8px; font-size: 13px;
+      border-radius: 6px; text-align: right;
+    }
+    .cost-table td select {
+      padding: 5px 8px; font-size: 12px; border-radius: 6px;
+      border: 1.5px solid var(--border); background: white;
+      color: var(--navy); cursor: pointer; outline: none;
+    }
+    .cost-table td select:focus { border-color: var(--gold); }
+    .cost-subtotal {
+      text-align: right; margin-top: 8px;
+      font-size: 13px; color: var(--muted);
+    }
+    .cost-subtotal strong { color: var(--navy); font-size: 15px; }
+    .cost-subtotal-uf { font-size: 11px; color: var(--muted); margin-left: 6px; }
+    .margin-box {
+      background: var(--navy); border-radius: 12px;
+      padding: 22px 28px; color: white;
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;
+      margin-top: 8px;
+    }
+    .margin-col { }
+    .margin-col-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; margin-bottom: 6px;
+    }
+    .margin-col-val { font-size: 22px; font-weight: 800; line-height: 1.1; }
+    .margin-col-sub { font-size: 11px; color: #8BA3B8; margin-top: 3px; }
+    .margin-good { color: #4ADE80; }
+    .margin-warn { color: #FCD34D; }
+    .margin-bad  { color: #F87171; }
+
+    @media print {
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      body { background: white; margin: 0; padding: 0; }
+      header { display: none !important; }
+      main { padding: 0 !important; max-width: 100% !important; }
+      main > *:not(#print-section) { display: none !important; }
+      #print-section { margin: 0; padding: 0; }
+      #print-area { display: block !important; border: none !important; border-radius: 0 !important; margin: 0 !important; box-shadow: none !important; }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo-area">
+    <!-- Logo icon: T con líneas descendentes (gold/white para fondo navy) -->
+    <svg viewBox="0 0 48 65" width="36" height="49" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="48" height="7" rx="2" fill="#C9A84C"/>
+      <rect x="0" y="0" width="7" height="65" rx="2" fill="#C9A84C"/>
+      <rect x="11" y="18" width="37" height="5" rx="1.5" fill="#C9A84C"/>
+      <rect x="11" y="28" width="30" height="5" rx="1.5" fill="#C9A84C" opacity="0.70"/>
+      <rect x="11" y="38" width="23" height="5" rx="1.5" fill="#ffffff" opacity="0.40"/>
+      <rect x="11" y="48" width="16" height="5" rx="1.5" fill="#ffffff" opacity="0.22"/>
+      <rect x="11" y="58" width="9"  height="5" rx="1.5" fill="#ffffff" opacity="0.12"/>
+    </svg>
+    <div class="logo-sep"></div>
+    <div class="logo-wordmark">
+      <div class="logo-mr">MR.</div>
+      <div class="logo-tom">Tom</div>
+    </div>
+  </div>
+  <div class="header-badge">USO INTERNO · COTIZADOR</div>
+</header>
+
+<main>
+
+  <!-- UF VALUE -->
+  <div class="uf-box">
+    <label>VALOR UF HOY</label>
+    <input type="number" id="uf-value" value="38750" step="1" min="1" oninput="recalc()" />
+    <span class="uf-note">Actualiza el valor de la UF antes de cotizar (fuente: sii.cl)</span>
+  </div>
+
+  <!-- 1. DATOS DEL CLIENTE -->
+  <section>
+    <div class="section-title">01 · Datos del cliente</div>
+    <div class="client-grid">
+      <div>
+        <label>Nombre del cliente</label>
+        <input type="text" id="c-nombre" placeholder="Ana Rodríguez" oninput="updatePrint()" />
+      </div>
+      <div>
+        <label>Empresa / Razón social</label>
+        <input type="text" id="c-empresa" placeholder="Agencia Fauna SpA" oninput="updatePrint()" />
+      </div>
+      <div>
+        <label>Fecha de cotización</label>
+        <input type="date" id="c-fecha" oninput="updatePrint()" />
+      </div>
+    </div>
+    <div style="margin-top:14px;">
+      <label>Resumen de reunión</label>
+      <textarea id="c-resumen" rows="4" placeholder="Ej: Cliente busca ordenar su contabilidad mensual y reducir carga tributaria. Actualmente trabaja con contador independiente. Interés en plan Consejero Activo. Próximo paso: enviar propuesta formal..." oninput="updatePrint()"></textarea>
+    </div>
+  </section>
+
+  <!-- 2. PLAN -->
+  <section>
+    <div class="section-title">02 · Plan base</div>
+    <div class="plans-grid">
+      <label class="plan-card" id="card-0" onclick="selectPlan(0)">
+        <input type="radio" name="plan" value="0" />
+        <div class="plan-check"></div>
+        <div class="plan-badge">Nivel 1 · Arranque</div>
+        <div class="plan-name">Base Inteligente</div>
+        <div class="plan-price">Desde 2 <span>UF/mes</span></div>
+        <div class="plan-uf-equiv" id="p0-clp">≈ $81.000 CLP · contrato mín. 6 meses</div>
+        <hr class="plan-divider" />
+        <ul class="plan-features">
+          <li>Contabilidad mensual completa (conciliación bancaria, libro compras y ventas)</li>
+          <li>Preparación tributaria F29 mensual</li>
+          <li>Dashboard financiero mensual automatizado (ingresos, egresos, saldo disponible)</li>
+          <li>1 consulta tributaria por escrito al mes (respuesta en 48 hrs)</li>
+        </ul>
+        <div style="margin-top:14px;font-size:12px;color:var(--muted);font-style:italic;">"Tu empresa siempre al día, sin que tengas que pensar en el SII."</div>
+      </label>
+      <label class="plan-card" id="card-1" onclick="selectPlan(1)" style="position:relative;">
+        <input type="radio" name="plan" value="1" />
+        <div class="plan-check"></div>
+        <div style="position:absolute;top:14px;left:50%;transform:translateX(-50%);background:var(--gold);color:white;font-size:10px;font-weight:700;letter-spacing:1.5px;padding:3px 12px;border-radius:20px;white-space:nowrap;">RECOMENDADO</div>
+        <div class="plan-badge" style="margin-top:22px;">Nivel 2 · Crecimiento</div>
+        <div class="plan-name">Consejero Activo</div>
+        <div class="plan-price">Desde 12 <span>UF/mes</span></div>
+        <div class="plan-uf-equiv" id="p1-clp">≈ $500.000 CLP · contrato mín. 12 meses</div>
+        <hr class="plan-divider" />
+        <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:1px;margin-bottom:6px;">CONTABILIDAD Y FINANZAS</div>
+        <ul class="plan-features" style="margin-bottom:12px;">
+          <li>Todo lo del Nivel 1</li>
+          <li>Estados financieros mensuales (balance, resultado, flujo de caja)</li>
+          <li>Revisión trimestral de PPM — asesoría sobre monto mensual</li>
+          <li>Reunión mensual de 45 min para revisar y decidir</li>
+        </ul>
+        <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:1px;margin-bottom:6px;">GESTIÓN Y ADMINISTRACIÓN</div>
+        <ul class="plan-features">
+          <li>Gestión de proveedores: pago y coordinación</li>
+          <li>Gestión de clientes: alarmas de pagos pendientes</li>
+          <li>Atención personalizada de asesorías</li>
+        </ul>
+        <div style="margin-top:14px;font-size:12px;color:var(--muted);font-style:italic;">"Sabes cuánto ganaste, cuánto puedes retirar y cuánto pagarás de impuestos — antes de que llegue la fecha."</div>
+      </label>
+    </div>
+    <div style="margin-top:10px;font-size:12px;color:var(--muted);">* Valor sujeto a cotización según volumen de movimientos de la empresa.</div>
+  </section>
+
+  <!-- 3. ADD-ONS -->
+  <section>
+    <div class="section-title">03 · Servicios adicionales</div>
+    <div class="addon-list" id="addon-list">
+      <!-- generados por JS -->
+    </div>
+    <div style="margin-top:20px;padding-top:16px;border-top:1px dashed var(--border);">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Ítems especiales del cliente</div>
+      <div id="special-items" style="display:flex;flex-direction:column;gap:8px;">
+        <!-- renderizados por JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. NOTAS -->
+  <section>
+    <div class="section-title">04 · Notas / condiciones especiales</div>
+    <textarea id="notas" placeholder="Ej: Descuento del 10% por referido. Inicio en agosto 2026. Incluye retroactividad de 3 meses..." oninput="updatePrint()"></textarea>
+  </section>
+
+  <!-- 5. RESUMEN EN VIVO -->
+  <section>
+    <div class="section-title">05 · Resumen de cotización</div>
+    <div class="summary-box">
+      <div class="summary-title">DESGLOSE</div>
+      <div id="summary-lines">
+        <div class="summary-line">
+          <span class="lbl">Selecciona un plan para comenzar</span>
+          <span class="val">—</span>
+        </div>
+      </div>
+      <div class="summary-total">
+        <div>
+          <div class="total-label">TOTAL MENSUAL</div>
+          <div class="total-uf" id="total-uf">0,00 UF</div>
+          <div class="total-clp" id="total-clp">$0 CLP / mes</div>
+        </div>
+        <div style="text-align:right">
+          <div class="total-period" id="total-annual">Anual: 0,00 UF · $0 CLP</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions no-print">
+      <button class="btn btn-outline" onclick="resetForm()">Limpiar</button>
+      <button class="btn btn-primary" onclick="generatePrint()">Generar cotización →</button>
+    </div>
+  </section>
+
+  <!-- 6. ANÁLISIS DE COSTOS INTERNOS (no-print) -->
+  <section class="no-print">
+    <div class="cost-section">
+      <div class="cost-section-label">Análisis de costos internos · no aparece en la cotización del cliente</div>
+
+      <!-- Área Contador -->
+      <div class="cost-area">
+        <div class="cost-area-title">Área Contador</div>
+        <table class="cost-table">
+          <thead>
+            <tr>
+              <th style="width:38%">Ítem</th>
+              <th style="width:20%">Valor</th>
+              <th style="width:18%">Moneda</th>
+              <th style="width:24%">Período</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Sueldo Contador</td>
+              <td><input type="number" id="cc-rate" placeholder="0" min="0" step="1000" oninput="calcCosts()" /></td>
+              <td style="font-size:11px;color:var(--muted)">CLP/mes</td>
+              <td style="font-size:11px;color:var(--muted)" id="cc-rate-hr">÷ 173 = $0/hr</td>
+            </tr>
+            <tr>
+              <td>Horas contabilidad</td>
+              <td><input type="number" id="cc-h-contab" placeholder="0" min="0" step="0.5" oninput="calcCosts()" /></td>
+              <td style="font-size:11px;color:var(--muted)">horas</td>
+              <td>
+                <select id="cc-p-contab" onchange="calcCosts()">
+                  <option value="mensual">Mensual</option>
+                  <option value="semanal">Semanal</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>Horas F29</td>
+              <td><input type="number" id="cc-h-f29" placeholder="0" min="0" step="0.5" oninput="calcCosts()" /></td>
+              <td style="font-size:11px;color:var(--muted)">horas</td>
+              <td>
+                <select id="cc-p-f29" onchange="calcCosts()">
+                  <option value="mensual">Mensual</option>
+                  <option value="semanal">Semanal</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>Horas reuniones</td>
+              <td><input type="number" id="cc-h-reunion" placeholder="0" min="0" step="0.5" oninput="calcCosts()" /></td>
+              <td style="font-size:11px;color:var(--muted)">horas</td>
+              <td>
+                <select id="cc-p-reunion" onchange="calcCosts()">
+                  <option value="mensual">Mensual</option>
+                  <option value="semanal">Semanal</option>
+                </select>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="cost-subtotal">
+          Subtotal contador/mes: <strong id="cc-subtotal">$0</strong>
+          <span class="cost-subtotal-uf" id="cc-subtotal-uf"></span>
+        </div>
+      </div>
+
+      <!-- Área Admin -->
+      <div class="cost-area">
+        <div class="cost-area-title">Área Administración</div>
+        <table class="cost-table">
+          <thead>
+            <tr>
+              <th style="width:38%">Ítem</th>
+              <th style="width:20%">Valor</th>
+              <th style="width:18%">Moneda</th>
+              <th style="width:24%">Período</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Sueldo Admin</td>
+              <td><input type="number" id="ca-rate" placeholder="0" min="0" step="1000" oninput="calcCosts()" /></td>
+              <td style="font-size:11px;color:var(--muted)">CLP/mes</td>
+              <td style="font-size:11px;color:var(--muted)" id="ca-rate-hr">÷ 173 = $0/hr</td>
+            </tr>
+            <tr>
+              <td>Horas asesoría</td>
+              <td><input type="number" id="ca-h-asesoria" placeholder="0" min="0" step="0.5" oninput="calcCosts()" /></td>
+              <td style="font-size:11px;color:var(--muted)">horas</td>
+              <td>
+                <select id="ca-p-asesoria" onchange="calcCosts()">
+                  <option value="mensual">Mensual</option>
+                  <option value="semanal">Semanal</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>Horas de trabajo</td>
+              <td><input type="number" id="ca-h-trabajo" placeholder="0" min="0" step="0.5" oninput="calcCosts()" /></td>
+              <td style="font-size:11px;color:var(--muted)">horas</td>
+              <td>
+                <select id="ca-p-trabajo" onchange="calcCosts()">
+                  <option value="mensual">Mensual</option>
+                  <option value="semanal">Semanal</option>
+                </select>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="cost-subtotal">
+          Subtotal admin/mes: <strong id="ca-subtotal">$0</strong>
+          <span class="cost-subtotal-uf" id="ca-subtotal-uf"></span>
+        </div>
+      </div>
+
+      <!-- Resultado: margen bruto -->
+      <div class="margin-box">
+        <div class="margin-col">
+          <div class="margin-col-label" style="color:#8BA3B8">Total costos estimados</div>
+          <div class="margin-col-val" id="mg-costos">$0</div>
+          <div class="margin-col-sub" id="mg-costos-uf"></div>
+        </div>
+        <div class="margin-col">
+          <div class="margin-col-label" style="color:#8BA3B8">Precio cotizado</div>
+          <div class="margin-col-val" id="mg-precio">—</div>
+          <div class="margin-col-sub" id="mg-precio-uf"></div>
+        </div>
+        <div class="margin-col">
+          <div class="margin-col-label" style="color:var(--gold)">Margen bruto estimado</div>
+          <div class="margin-col-val" id="mg-margen">—</div>
+          <div class="margin-col-sub" id="mg-margen-pct"></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 7. PRINT PREVIEW -->
+  <section id="print-section">
+    <div id="print-area">
+      <div class="print-header">
+        <div class="print-logo">
+          <svg viewBox="0 0 48 65" width="38" height="52" xmlns="http://www.w3.org/2000/svg">
+            <rect x="0" y="0" width="48" height="7" rx="2" fill="#C9A84C"/>
+            <rect x="0" y="0" width="7" height="65" rx="2" fill="#C9A84C"/>
+            <rect x="11" y="18" width="37" height="5" rx="1.5" fill="#C9A84C"/>
+            <rect x="11" y="28" width="30" height="5" rx="1.5" fill="#C9A84C" opacity="0.70"/>
+            <rect x="11" y="38" width="23" height="5" rx="1.5" fill="#ffffff" opacity="0.40"/>
+            <rect x="11" y="48" width="16" height="5" rx="1.5" fill="#ffffff" opacity="0.22"/>
+            <rect x="11" y="58" width="9"  height="5" rx="1.5" fill="#ffffff" opacity="0.12"/>
+          </svg>
+          <div class="print-logo-sep"></div>
+          <div class="print-logo-wordmark">
+            <div class="print-logo-mr">MR.</div>
+            <div class="print-logo-tom">Tom</div>
+          </div>
+        </div>
+        <div class="print-meta">
+          <div id="pr-quote-num" style="color:var(--gold);font-weight:700;font-size:14px;letter-spacing:1px;"></div>
+          <div id="pr-fecha" style="margin-top:3px;"></div>
+          <div style="color:#4A6280;font-size:11px;margin-top:3px;">Cotización confidencial · uso interno</div>
+        </div>
+      </div>
+      <div class="print-body">
+        <div class="print-client">
+          <h3>Cliente</h3>
+          <div class="print-client-grid">
+            <div class="print-client-item">
+              <div class="field-label">Nombre</div>
+              <div class="field-value" id="pr-nombre">—</div>
+            </div>
+            <div class="print-client-item">
+              <div class="field-label">Empresa</div>
+              <div class="field-value" id="pr-empresa">—</div>
+            </div>
+            <div class="print-client-item">
+              <div class="field-label">Válida por</div>
+              <div class="field-value">30 días desde emisión</div>
+            </div>
+          </div>
+          <div id="pr-resumen-section" style="display:none; margin-top:14px;">
+            <div class="field-label" style="margin-bottom:5px;">Resumen de reunión</div>
+            <div id="pr-resumen-text" style="font-size:13px; color:#374151; line-height:1.6; background:#F9F7F3; border-radius:8px; padding:12px 16px;"></div>
+          </div>
+        </div>
+
+        <div class="print-plan-box">
+          <div>
+            <div class="print-plan-level" id="pr-plan-level">NIVEL —</div>
+            <div class="print-plan-name" id="pr-plan-name">—</div>
+          </div>
+          <div style="text-align:right">
+            <div class="print-plan-price" id="pr-plan-price">— <small>UF/mes</small></div>
+            <div style="font-size:13px;color:var(--muted);margin-top:4px;" id="pr-plan-clp">—</div>
+          </div>
+        </div>
+
+        <div id="pr-plan-features-wrap" style="display:none">
+          <div class="print-plan-features" id="pr-plan-features-list"></div>
+        </div>
+
+        <div class="print-addons" id="pr-addons-section" style="display:none">
+          <h3>Servicios adicionales</h3>
+          <div id="pr-addons-list"></div>
+        </div>
+
+        <div class="print-total-box">
+          <div>
+            <div class="print-total-label">TOTAL MENSUAL</div>
+            <div class="print-total-uf" id="pr-total-uf">0,00 <small>UF/mes</small></div>
+            <div class="print-total-clp" id="pr-total-clp">$0 CLP / mes</div>
+          </div>
+          <div style="text-align:right">
+            <div style="color:var(--gold);font-size:11px;font-weight:700;letter-spacing:2px;">TOTAL ANUAL</div>
+            <div style="color:white;font-size:22px;font-weight:700;" id="pr-annual-uf">0,00 UF</div>
+            <div style="color:#8BA3B8;font-size:13px;" id="pr-annual-clp">$0 CLP</div>
+          </div>
+        </div>
+
+        <div class="print-notes" id="pr-notes-section" style="display:none">
+          <h3>Notas y condiciones</h3>
+          <p id="pr-notes-text"></p>
+        </div>
+      </div>
+      <div class="print-footer">
+        <div class="print-footer-text">www.mrtom.cl · contacto@mrtom.cl</div>
+        <div class="print-validity">UF utilizada: $<span id="pr-uf-val">—</span></div>
+      </div>
+    </div>
+
+    <div class="actions no-print" id="print-actions" style="display:none">
+      <button class="btn btn-outline" onclick="document.getElementById('print-area').classList.remove('visible'); document.getElementById('print-actions').style.display='none'">Ocultar</button>
+      <button class="btn btn-primary" onclick="window.print()">🖨 Imprimir / Guardar PDF</button>
+    </div>
+  </section>
+
+</main>
+
+<script>
+// ── SPECIAL ITEMS (3 fixed editable rows in section 03) ─────────────
+const specialItems = [
+  { name: '', qty: 1, uf: 0 },
+  { name: '', qty: 1, uf: 0 },
+  { name: '', qty: 1, uf: 0 },
+];
+
+function renderSpecialItems() {
+  const container = document.getElementById('special-items');
+  container.innerHTML = '';
+  specialItems.forEach((item, i) => {
+    const row = document.createElement('div');
+    row.className = 'custom-item-row';
+    row.innerHTML = `
+      <input type="text" placeholder="Nombre del ítem especial"
+             value="${item.name}"
+             oninput="specialItems[${i}].name=this.value; recalc()" />
+      <input type="number" placeholder="Cant." value="${item.qty}" min="1" max="999" step="1"
+             oninput="specialItems[${i}].qty=Math.max(1,parseInt(this.value)||1); recalc()" />
+      <div class="custom-item-uf-wrap">
+        <input type="number" placeholder="0,00" value="${item.uf || ''}" min="0" step="0.05"
+               oninput="specialItems[${i}].uf=parseFloat(this.value)||0; recalc()" />
+        <span>UF</span>
+      </div>
+      <div style="width:32px"></div>
+    `;
+    container.appendChild(row);
+  });
+}
+
+// ── CUSTOM ITEMS ────────────────────────────────────────────────────
+let customItems = [];
+let customIdCounter = 0;
+
+function addCustomItem() {
+  const id = ++customIdCounter;
+  customItems.push({ id, name: '', qty: 1, uf: 0 });
+  renderCustomItems();
+}
+
+function removeCustomItem(id) {
+  customItems = customItems.filter(x => x.id !== id);
+  renderCustomItems();
+  recalc();
+}
+
+function renderCustomItems() {
+  const list = document.getElementById('custom-items-list');
+  list.innerHTML = '';
+  customItems.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'custom-item-row';
+    row.innerHTML = `
+      <input type="text" placeholder="Nombre del servicio / ítem"
+             value="${item.name}"
+             oninput="updateCustomItem(${item.id},'name',this.value)" />
+      <input type="number" placeholder="Cant." value="${item.qty}" min="1" max="999" step="1"
+             oninput="updateCustomItem(${item.id},'qty',this.value)" />
+      <div class="custom-item-uf-wrap">
+        <input type="number" placeholder="0,00" value="${item.uf}" min="0" step="0.05"
+               oninput="updateCustomItem(${item.id},'uf',this.value)" />
+        <span>UF</span>
+      </div>
+      <button class="btn-del" onclick="removeCustomItem(${item.id})" title="Eliminar">×</button>
+    `;
+    list.appendChild(row);
+  });
+}
+
+function updateCustomItem(id, field, val) {
+  const item = customItems.find(x => x.id === id);
+  if (!item) return;
+  if (field === 'name') item.name = val;
+  else if (field === 'qty') item.qty = Math.max(1, parseInt(val) || 1);
+  else if (field === 'uf') item.uf = parseFloat(val) || 0;
+  recalc();
+}
+
+// ── DATA ────────────────────────────────────────────────────────────
+const PLANS = [
+  {
+    level: "Nivel 1 · Arranque",
+    name:  "Base Inteligente",
+    uf:    2,
+    sections: [
+      { title: null, features: [
+        "Contabilidad mensual completa (conciliación bancaria, libro de compras y ventas)",
+        "Preparación tributaria F29 mensual",
+        "Dashboard financiero mensual automatizado — ingresos, egresos, saldo disponible",
+        "1 consulta tributaria por escrito al mes (respuesta en 48 hrs)"
+      ]}
+    ]
+  },
+  {
+    level: "Nivel 2 · Crecimiento",
+    name:  "Consejero Activo",
+    uf:    12,
+    sections: [
+      { title: "Contabilidad y finanzas", features: [
+        "Contabilidad mensual completa (conciliación bancaria, libro de compras y ventas)",
+        "Preparación tributaria F29 mensual",
+        "Estados financieros mensuales: balance, estado de resultados, flujo de caja",
+        "Revisión trimestral de PPM — asesoría sobre monto mensual",
+        "Reunión mensual de 45 min para revisar y decidir"
+      ]},
+      { title: "Gestión y administración", features: [
+        "Gestión de proveedores: pago y coordinación",
+        "Gestión de clientes: alarmas de pagos pendientes e información de estado",
+        "Atención personalizada de asesorías e información"
+      ]}
+    ]
+  },
+];
+
+const ADDONS = [
+  { id:"inicio",      name:"Inicio de actividades + estructura", desc:"Elección régimen tributario, alta en SII y configuración inicial", uf:2.0,  qty:false, unit:"cobro único"      },
+  { id:"remun",       name:"Remuneraciones",                     desc:"Cálculo sueldo y Previred por cada trabajador",                    uf:0.3,  qty:true,  unit:"por trabajador"   },
+  { id:"renta",       name:"Operación Renta intensiva",          desc:"Preparación completa F22 y DJs (sin contabilidad al día)",         uf:3.0,  qty:false, unit:"cobro anual"      },
+  { id:"presupuesto", name:"Presupuesto",                        desc:"Creación y/o control de presupuesto mensual de la empresa",        uf:8.0,  qty:false, unit:"mes"              },
+];
+
+let selectedPlan    = null;
+let addonState      = {};
+let currentTotalUF  = 0;
+let currentQuoteCode = null;  // se asigna al generar, se resetea al limpiar
+
+// ── INIT ────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('c-fecha').value = new Date().toISOString().split('T')[0];
+  renderAddons();
+  renderSpecialItems();
+  recalc();
+});
+
+function renderAddons() {
+  const list = document.getElementById('addon-list');
+  list.innerHTML = '';
+  ADDONS.forEach(a => {
+    addonState[a.id] = { checked: false, qty: 1, uf: a.uf };
+    const row = document.createElement('div');
+    row.className = 'addon-row';
+    row.id = 'addon-row-' + a.id;
+    row.innerHTML = `
+      <input type="checkbox" id="chk-${a.id}" onchange="toggleAddon('${a.id}')" />
+      <div class="addon-info">
+        <div class="addon-name">${a.name}</div>
+        <div class="addon-desc">${a.desc}</div>
+      </div>
+      ${a.qty ? `
+      <div class="addon-qty">
+        <label>Cantidad</label>
+        <input type="number" id="qty-${a.id}" value="1" min="1" max="99"
+               oninput="setQty('${a.id}', this.value)" style="width:60px" />
+      </div>` : '<div></div>'}
+      <div class="addon-price-col">
+        <div class="addon-price-edit">
+          <input type="number" id="price-${a.id}" value="${a.uf}" step="0.05" min="0"
+                 oninput="setPrice('${a.id}', this.value)" title="Precio en UF editable" />
+          <span>UF/${a.unit.split(' ').pop()}</span>
+        </div>
+        <div class="addon-clp" id="addon-clp-${a.id}">$${fmt(a.uf * getUF())} CLP</div>
+      </div>
+    `;
+    list.appendChild(row);
+  });
+}
+
+// ── HELPERS ─────────────────────────────────────────────────────────
+const getUF  = () => parseFloat(document.getElementById('uf-value').value) || 38750;
+const fmt    = n  => Math.round(n).toLocaleString('es-CL');
+const fmtUF  = n  => n.toFixed(2).replace('.', ',');
+
+function selectPlan(idx) {
+  selectedPlan = idx;
+  document.querySelectorAll('.plan-card').forEach((c, i) => {
+    c.classList.toggle('selected', i === idx);
+  });
+  recalc();
+}
+
+function toggleAddon(id) {
+  const chk = document.getElementById('chk-' + id);
+  addonState[id].checked = chk.checked;
+  document.getElementById('addon-row-' + id).classList.toggle('active', chk.checked);
+  recalc();
+}
+
+function setQty(id, val) {
+  addonState[id].qty = Math.max(1, parseInt(val) || 1);
+  recalc();
+}
+
+function setPrice(id, val) {
+  addonState[id].uf = parseFloat(val) || 0;
+  recalc();
+}
+
+// ── RECALC ──────────────────────────────────────────────────────────
+function recalc() {
+  const ufVal = getUF();
+
+  // Update plan CLP hints
+  PLANS.forEach((p, i) => {
+    const el = document.getElementById(`p${i}-clp`);
+    if (el) el.textContent = `≈ $${fmt(p.uf * ufVal)} CLP/mes`;
+  });
+
+  // Update addon CLP hints
+  ADDONS.forEach(a => {
+    const el = document.getElementById('addon-clp-' + a.id);
+    if (el) el.textContent = `$${fmt(addonState[a.id].uf * ufVal)} CLP`;
+  });
+
+  // Custom items always shown even without plan
+  const customActive = customItems.filter(x => x.name.trim() || x.uf > 0);
+
+  if (selectedPlan === null) {
+    // Show only custom items if no plan selected
+    if (customActive.length === 0) return;
+    const summaryEl = document.getElementById('summary-lines');
+    let totalUF = 0;
+    const lines = [];
+    customActive.forEach(item => {
+      const lineUF = item.uf * item.qty;
+      lines.push({ lbl: (item.name.trim() || 'Ítem sin nombre') + (item.qty > 1 ? ` (×${item.qty})` : ''), val: `${fmtUF(lineUF)} UF` });
+      totalUF += lineUF;
+    });
+    summaryEl.innerHTML = lines.map(l =>
+      `<div class="summary-line"><span class="lbl">${l.lbl}</span><span class="val">${l.val}</span></div>`
+    ).join('');
+    document.getElementById('total-uf').textContent = `${fmtUF(totalUF)} UF`;
+    document.getElementById('total-clp').textContent = `$${fmt(totalUF * ufVal)} CLP / mes`;
+    document.getElementById('total-annual').textContent = `Anual: ${fmtUF(totalUF * 12)} UF · $${fmt(totalUF * 12 * ufVal)} CLP`;
+    return;
+  }
+
+  const plan = PLANS[selectedPlan];
+  let totalUF = plan.uf;
+  const lines = [];
+  lines.push({ lbl: `${plan.level} — ${plan.name}`, val: `${fmtUF(plan.uf)} UF` });
+
+  // Custom items
+  customActive.forEach(item => {
+    const lineUF = item.uf * item.qty;
+    lines.push({ lbl: (item.name.trim() || 'Ítem sin nombre') + (item.qty > 1 ? ` (×${item.qty})` : ''), val: `+${fmtUF(lineUF)} UF` });
+    totalUF += lineUF;
+  });
+
+  let hasAddons = false;
+  ADDONS.forEach(a => {
+    const st = addonState[a.id];
+    if (!st.checked) return;
+    hasAddons = true;
+    const lineUF = st.uf * (a.qty ? st.qty : 1);
+    const addon = ADDONS.find(x => x.id === a.id);
+    const label = addon.qty ? `${a.name} (×${st.qty})` : a.name;
+    lines.push({ lbl: label, val: `+${fmtUF(lineUF)} UF` });
+    totalUF += a.id === 'renta' ? lineUF / 12 : lineUF;
+  });
+
+  // Special items
+  specialItems.forEach(item => {
+    if (!item.name.trim() && item.uf === 0) return;
+    const lineUF = item.uf * item.qty;
+    const label = (item.name.trim() || 'Ítem especial') + (item.qty > 1 ? ` (×${item.qty})` : '');
+    lines.push({ lbl: label, val: `+${fmtUF(lineUF)} UF` });
+    totalUF += lineUF;
+  });
+
+  // Render summary
+  const summaryEl = document.getElementById('summary-lines');
+  summaryEl.innerHTML = lines.map(l =>
+    `<div class="summary-line"><span class="lbl">${l.lbl}</span><span class="val">${l.val}</span></div>`
+  ).join('');
+
+  document.getElementById('total-uf').textContent = `${fmtUF(totalUF)} UF`;
+  document.getElementById('total-clp').textContent = `$${fmt(totalUF * ufVal)} CLP / mes`;
+  document.getElementById('total-annual').textContent =
+    `Anual: ${fmtUF(totalUF * 12)} UF · $${fmt(totalUF * 12 * ufVal)} CLP`;
+  currentTotalUF = totalUF;
+  calcCosts();
+}
+
+// ── GENERATE PRINT ──────────────────────────────────────────────────
+function generatePrint() {
+  if (selectedPlan === null) { alert('Selecciona un plan primero.'); return; }
+  const ufVal = getUF();
+  const plan  = PLANS[selectedPlan];
+
+  // Número de cotización (correlativo, persiste en localStorage)
+  if (!currentQuoteCode) {
+    const year    = new Date().getFullYear();
+    const counter = parseInt(localStorage.getItem('mrtom_cot_num') || '0') + 1;
+    localStorage.setItem('mrtom_cot_num', counter);
+    currentQuoteCode = `COT-${year}-${String(counter).padStart(3, '0')}`;
+  }
+  document.getElementById('pr-quote-num').textContent = currentQuoteCode;
+
+  // Client
+  document.getElementById('pr-nombre').textContent  = document.getElementById('c-nombre').value  || '—';
+  document.getElementById('pr-empresa').textContent  = document.getElementById('c-empresa').value  || '—';
+  const resumen = document.getElementById('c-resumen').value.trim();
+  const resumenSection = document.getElementById('pr-resumen-section');
+  if (resumen) {
+    resumenSection.style.display = 'block';
+    document.getElementById('pr-resumen-text').textContent = resumen;
+  } else {
+    resumenSection.style.display = 'none';
+  }
+  document.getElementById('pr-fecha').textContent    = document.getElementById('c-fecha').value
+    ? new Date(document.getElementById('c-fecha').value + 'T12:00:00').toLocaleDateString('es-CL', {day:'numeric',month:'long',year:'numeric'})
+    : new Date().toLocaleDateString('es-CL', {day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('pr-uf-val').textContent   = fmt(ufVal);
+
+  // Plan
+  document.getElementById('pr-plan-level').textContent = plan.level;
+  document.getElementById('pr-plan-name').textContent  = plan.name;
+  document.getElementById('pr-plan-price').innerHTML   = `${fmtUF(plan.uf)} <small>UF/mes</small>`;
+  document.getElementById('pr-plan-clp').textContent   = `≈ $${fmt(plan.uf * ufVal)} CLP/mes`;
+
+  // Features del plan
+  const featuresWrap = document.getElementById('pr-plan-features-wrap');
+  const featuresList = document.getElementById('pr-plan-features-list');
+  featuresList.innerHTML = '';
+  if (plan.sections && plan.sections.length) {
+    plan.sections.forEach(section => {
+      if (section.title) {
+        const t = document.createElement('div');
+        t.className = 'print-plan-features-section-title';
+        t.textContent = section.title;
+        featuresList.appendChild(t);
+      }
+      section.features.forEach(f => {
+        const row = document.createElement('div');
+        row.className = 'print-plan-feature-row';
+        row.innerHTML = `<span class="print-plan-feature-check">✓</span><span>${f}</span>`;
+        featuresList.appendChild(row);
+      });
+    });
+    featuresWrap.style.display = 'block';
+  } else {
+    featuresWrap.style.display = 'none';
+  }
+
+  // Add-ons + special items
+  let totalUF = plan.uf;
+  const activeAddons = [];
+
+  ADDONS.forEach(a => {
+    const st = addonState[a.id];
+    if (!st.checked) return;
+    const lineUF = st.uf * (a.qty ? st.qty : 1);
+    activeAddons.push({ name: a.qty ? `${a.name} (×${st.qty})` : a.name, uf: lineUF, a });
+    totalUF += a.id === 'renta' ? lineUF / 12 : lineUF;
+  });
+
+  specialItems.forEach(item => {
+    if (!item.name.trim() && item.uf === 0) return;
+    const lineUF = item.uf * item.qty;
+    activeAddons.push({ name: (item.name.trim() || 'Ítem especial') + (item.qty > 1 ? ` (×${item.qty})` : ''), uf: lineUF });
+    totalUF += lineUF;
+  });
+
+  const addonsSection = document.getElementById('pr-addons-section');
+  const addonsList    = document.getElementById('pr-addons-list');
+  if (activeAddons.length > 0) {
+    addonsSection.style.display = 'block';
+    addonsList.innerHTML = activeAddons.map(x =>
+      `<div class="print-addon-row">
+        <span class="print-addon-name">${x.name}</span>
+        <span class="print-addon-price">${fmtUF(x.uf)} UF${x.a && x.a.id==='renta'?' (anual, equiv. '+fmtUF(x.uf/12)+' UF/mes)':''}</span>
+      </div>`
+    ).join('');
+  } else {
+    addonsSection.style.display = 'none';
+  }
+
+  // Totals
+  document.getElementById('pr-total-uf').innerHTML  = `${fmtUF(totalUF)} <small>UF/mes</small>`;
+  document.getElementById('pr-total-clp').textContent = `$${fmt(totalUF * ufVal)} CLP / mes`;
+  document.getElementById('pr-annual-uf').textContent  = `${fmtUF(totalUF * 12)} UF`;
+  document.getElementById('pr-annual-clp').textContent = `$${fmt(totalUF * 12 * ufVal)} CLP`;
+
+  // Notes
+  const notas = document.getElementById('notas').value.trim();
+  const notesSection = document.getElementById('pr-notes-section');
+  if (notas) {
+    notesSection.style.display = 'block';
+    document.getElementById('pr-notes-text').textContent = notas;
+  } else {
+    notesSection.style.display = 'none';
+  }
+
+  document.getElementById('print-area').classList.add('visible');
+  document.getElementById('print-actions').style.display = 'flex';
+  document.getElementById('print-area').scrollIntoView({ behavior: 'smooth' });
+}
+
+function updatePrint() { /* live update not needed */ }
+
+// ── COST ANALYSIS ────────────────────────────────────────────────────
+const HORAS_MES = 173;
+
+function calcCosts() {
+  const ufVal     = getUF();
+  const toMonthly = (val, periodId) => {
+    const period = document.getElementById(periodId)?.value || 'mensual';
+    return period === 'semanal' ? val * 4 : val;
+  };
+  const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  const getNum = id => parseFloat(document.getElementById(id)?.value) || 0;
+
+  // ── Contador ──────────────────────────────────────────────────
+  const ccSueldo   = getNum('cc-rate');                        // sueldo mensual CLP
+  const ccHrCost   = ccSueldo / HORAS_MES;                    // costo por hora = sueldo / 173
+  const hContab    = toMonthly(getNum('cc-h-contab'), 'cc-p-contab');
+  const hF29       = toMonthly(getNum('cc-h-f29'),    'cc-p-f29');
+  const hReunion   = toMonthly(getNum('cc-h-reunion'),'cc-p-reunion');
+  const ccTotalHrs = hContab + hF29 + hReunion;
+  const ccCostCLP  = ccHrCost * ccTotalHrs;                   // (sueldo/173) × horas
+
+  // ── Admin ─────────────────────────────────────────────────────
+  const caSueldo   = getNum('ca-rate');
+  const caHrCost   = caSueldo / HORAS_MES;
+  const hAsesoria  = toMonthly(getNum('ca-h-asesoria'), 'ca-p-asesoria');
+  const hTrabajo   = toMonthly(getNum('ca-h-trabajo'),  'ca-p-trabajo');
+  const caTotalHrs = hAsesoria + hTrabajo;
+  const caCostCLP  = caHrCost * caTotalHrs;
+
+  // ── Totales ───────────────────────────────────────────────────
+  const totalCostCLP = ccCostCLP + caCostCLP;
+  const totalCostUF  = ufVal > 0 ? totalCostCLP / ufVal : 0;
+  const quotedCLP    = currentTotalUF * ufVal;
+  const marginCLP    = quotedCLP - totalCostCLP;
+  const marginPct    = quotedCLP > 0 ? (marginCLP / quotedCLP * 100) : null;
+
+  // ── UI ────────────────────────────────────────────────────────
+  // Tarifa/hr derivada (mostrada como referencia)
+  setEl('cc-rate-hr', ccSueldo > 0 ? `÷ 173 = $${fmt(Math.round(ccHrCost))}/hr` : '÷ 173 = $0/hr');
+  setEl('ca-rate-hr', caSueldo > 0 ? `÷ 173 = $${fmt(Math.round(caHrCost))}/hr` : '÷ 173 = $0/hr');
+
+  // Subtotales con desglose de horas
+  setEl('cc-subtotal', `$${fmt(Math.round(ccCostCLP))}`);
+  setEl('cc-subtotal-uf', ccCostCLP > 0
+    ? `${ccTotalHrs.toFixed(1)} hrs × $${fmt(Math.round(ccHrCost))}/hr ≈ ${fmtUF(ccCostCLP/ufVal)} UF`
+    : '');
+  setEl('ca-subtotal', `$${fmt(Math.round(caCostCLP))}`);
+  setEl('ca-subtotal-uf', caCostCLP > 0
+    ? `${caTotalHrs.toFixed(1)} hrs × $${fmt(Math.round(caHrCost))}/hr ≈ ${fmtUF(caCostCLP/ufVal)} UF`
+    : '');
+
+  // Caja de margen
+  setEl('mg-costos',    `$${fmt(Math.round(totalCostCLP))}`);
+  setEl('mg-costos-uf', totalCostCLP > 0 ? `${fmtUF(totalCostUF)} UF/mes` : '');
+  setEl('mg-precio',    currentTotalUF > 0 ? `$${fmt(Math.round(quotedCLP))}` : '—');
+  setEl('mg-precio-uf', currentTotalUF > 0 ? `${fmtUF(currentTotalUF)} UF/mes` : 'selecciona un plan');
+
+  const margenEl    = document.getElementById('mg-margen');
+  const margenPctEl = document.getElementById('mg-margen-pct');
+  if (margenEl && currentTotalUF > 0) {
+    margenEl.textContent = `$${fmt(Math.round(marginCLP))}`;
+    margenEl.className   = 'margin-col-val ' + (marginPct >= 40 ? 'margin-good' : marginPct >= 20 ? 'margin-warn' : 'margin-bad');
+    if (margenPctEl) margenPctEl.textContent = `${marginPct.toFixed(1)}% margen bruto`;
+  } else if (margenEl) {
+    margenEl.textContent = '—';
+    margenEl.className   = 'margin-col-val';
+    if (margenPctEl) margenPctEl.textContent = 'ingresa precio cotizado';
+  }
+}
+
+function resetForm() {
+  selectedPlan = null;
+  document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('.addon-row').forEach(r => r.classList.remove('active'));
+  document.querySelectorAll('input[type=checkbox]').forEach(c => c.checked = false);
+  document.getElementById('c-nombre').value   = '';
+  document.getElementById('c-empresa').value  = '';
+  document.getElementById('c-resumen').value  = '';
+  document.getElementById('notas').value      = '';
+  document.getElementById('print-area').classList.remove('visible');
+  document.getElementById('print-actions').style.display = 'none';
+  customItems = [];
+  customIdCounter = 0;
+  renderCustomItems();
+  specialItems.forEach(item => { item.name=''; item.qty=1; item.uf=0; });
+  renderSpecialItems();
+  currentTotalUF   = 0;
+  currentQuoteCode = null;
+  ['cc-rate','cc-h-contab','cc-h-f29','cc-h-reunion','ca-rate','ca-h-asesoria','ca-h-trabajo'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  calcCosts();
+  ADDONS.forEach(a => addonState[a.id] = { checked:false, qty:1, uf:a.uf });
+  document.getElementById('summary-lines').innerHTML =
+    '<div class="summary-line"><span class="lbl">Selecciona un plan para comenzar</span><span class="val">—</span></div>';
+  document.getElementById('total-uf').textContent  = '0,00 UF';
+  document.getElementById('total-clp').textContent = '$0 CLP / mes';
+  renderAddons();
+}
+</script>
+</body>
+</html>
