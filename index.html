@@ -239,6 +239,7 @@
     .summary-line:last-of-type { border-bottom: none; }
     .summary-line .lbl { color: #8BA3B8; }
     .summary-line .val { color: var(--white); font-weight: 600; }
+    .summary-line .lbl-desc { display: block; font-size: 11px; color: #566F88; margin-top: 2px; }
     .summary-subtotal {
       display: flex; justify-content: space-between; align-items: baseline;
       padding: 10px 0; margin: 6px 0 2px;
@@ -373,7 +374,8 @@
     }
     .print-addon-row:last-child { border-bottom: none; }
     .print-addon-name { color: var(--navy); font-weight: 500; }
-    .print-addon-price { color: var(--muted); text-align: right; }
+    .print-addon-desc { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; font-weight: 400; }
+    .print-addon-price { color: var(--muted); text-align: right; min-width: 90px; }
     .print-total-box {
       background: var(--navy);
       border-radius: 12px;
@@ -1201,14 +1203,22 @@ function recalc() {
     const st = addonState[a.id];
     if (!st.checked) return;
     const lineUF = st.uf * (a.qty ? st.qty : 1);
-    addonLines.push({ lbl: a.qty ? `${a.name} (×${st.qty})` : a.name, val: `+${fmtUF(lineUF)} UF` });
+    const unitLabel = a.id === 'renta' ? 'cobro anual' : a.unit;
+    addonLines.push({
+      lbl: a.qty ? `${a.name} (×${st.qty})` : a.name,
+      desc: `${a.desc} · ${unitLabel}`,
+      val: `+${fmtUF(lineUF)} UF`
+    });
     addonUF += a.id === 'renta' ? lineUF / 12 : lineUF;
   });
 
   if (addonLines.length > 0) {
     html += `<div class="summary-subtotal"><span class="lbl">SUBTOTAL BASE</span><span class="val">${fmtUF(subtotalUF)} UF</span></div>`;
     html += addonLines.map(l =>
-      `<div class="summary-line"><span class="lbl">${l.lbl}</span><span class="val">${l.val}</span></div>`
+      `<div class="summary-line">
+        <span class="lbl">${l.lbl}<span class="lbl-desc">${l.desc}</span></span>
+        <span class="val">${l.val}</span>
+      </div>`
     ).join('');
   }
 
@@ -1332,12 +1342,14 @@ function generatePrint() {
   const addonsList    = document.getElementById('pr-addons-list');
   if (activeAddons.length > 0) {
     addonsSection.style.display = 'block';
-    addonsList.innerHTML = activeAddons.map(x =>
-      `<div class="print-addon-row">
-        <span class="print-addon-name">${x.name}</span>
-        <span class="print-addon-price">+${fmtUF(x.uf)} UF${x.a && x.a.id==='renta'?' (anual, equiv. '+fmtUF(x.uf/12)+' UF/mes)':''}</span>
-      </div>`
-    ).join('');
+    addonsList.innerHTML = activeAddons.map(x => {
+      const unitLabel = x.a && x.a.id === 'renta' ? 'cobro anual' : (x.a ? x.a.unit : '');
+      const desc = x.a ? `${x.a.desc} · ${unitLabel}` : '';
+      return `<div class="print-addon-row">
+        <span class="print-addon-name">${x.name}<span class="print-addon-desc">${desc}</span></span>
+        <span class="print-addon-price">+${fmtUF(x.uf)} UF${x.a && x.a.id==='renta'?' (equiv. '+fmtUF(x.uf/12)+' UF/mes)':''}</span>
+      </div>`;
+    }).join('');
   } else {
     addonsSection.style.display = 'none';
   }
