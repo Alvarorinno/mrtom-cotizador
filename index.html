@@ -239,16 +239,21 @@
     .summary-line:last-of-type { border-bottom: none; }
     .summary-line .lbl { color: #8BA3B8; }
     .summary-line .val { color: var(--white); font-weight: 600; }
+    .summary-subtotal {
+      display: flex; justify-content: space-between; align-items: baseline;
+      padding: 10px 0; margin: 6px 0 2px;
+      border-top: 1px solid #2E4460;
+    }
+    .summary-subtotal .lbl { color: var(--gold); font-size: 11px; font-weight: 700; letter-spacing: 2px; }
+    .summary-subtotal .val { color: var(--white); font-weight: 700; font-size: 15px; }
     .summary-total {
       margin-top: 20px;
       padding-top: 20px;
       border-top: 1px solid #2E4460;
-      display: flex; justify-content: space-between; align-items: flex-end;
     }
     .total-label { font-size: 13px; color: var(--gold); font-weight: 700; letter-spacing: 1px; }
     .total-uf { font-size: 38px; font-weight: 800; color: var(--white); line-height: 1; }
     .total-clp { font-size: 16px; color: #8BA3B8; margin-top: 4px; }
-    .total-period { font-size: 12px; color: #8BA3B8; }
 
     /* ── CUSTOM ITEMS ──────────────────────────────────────────── */
     .custom-items-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
@@ -353,6 +358,14 @@
     .print-plan-price { font-size: 28px; font-weight: 800; color: var(--navy); }
     .print-plan-price small { font-size: 13px; color: var(--muted); font-weight: 400; }
     .print-addons h3 { font-size: 11px; letter-spacing: 3px; color: var(--gold); font-weight: 700; margin-bottom: 14px; }
+    .print-subtotal-row {
+      display: flex; justify-content: space-between; align-items: baseline;
+      padding: 10px 0; margin: 6px 0;
+      border-top: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .print-subtotal-row .lbl { color: var(--gold); font-size: 10px; font-weight: 700; letter-spacing: 2px; }
+    .print-subtotal-row .val { color: var(--navy); font-weight: 700; font-size: 15px; }
     .print-addon-row {
       display: flex; justify-content: space-between;
       padding: 10px 0; border-bottom: 1px solid var(--border);
@@ -501,7 +514,6 @@
       /* Total box */
       .print-total-box { padding: 14px 20px; margin-top: 12px; }
       .print-total-uf { font-size: 26px; }
-      #pr-annual-uf { font-size: 17px; }
 
       /* Resumen reunión */
       #pr-resumen-text { font-size: 11px; padding: 8px 12px; }
@@ -643,14 +655,9 @@
         </div>
       </div>
       <div class="summary-total">
-        <div>
-          <div class="total-label">TOTAL MENSUAL</div>
-          <div class="total-uf" id="total-uf">0,00 UF</div>
-          <div class="total-clp" id="total-clp">$0 CLP / mes</div>
-        </div>
-        <div style="text-align:right">
-          <div class="total-period" id="total-annual">Anual: 0,00 UF · $0 CLP</div>
-        </div>
+        <div class="total-label">TOTAL MENSUAL</div>
+        <div class="total-uf" id="total-uf">0,00 UF</div>
+        <div class="total-clp" id="total-clp">$0 CLP / mes</div>
       </div>
     </div>
 
@@ -893,22 +900,25 @@
           <div class="print-plan-features" id="pr-plan-features-list"></div>
         </div>
 
+        <div class="print-addons" id="pr-special-section" style="display:none">
+          <h3>Ítems especiales</h3>
+          <div id="pr-special-list"></div>
+        </div>
+
+        <div class="print-subtotal-row" id="pr-subtotal-section" style="display:none">
+          <span class="lbl">SUBTOTAL BASE</span>
+          <span class="val" id="pr-subtotal-uf">0,00 UF</span>
+        </div>
+
         <div class="print-addons" id="pr-addons-section" style="display:none">
           <h3>Servicios adicionales</h3>
           <div id="pr-addons-list"></div>
         </div>
 
         <div class="print-total-box">
-          <div>
-            <div class="print-total-label">TOTAL MENSUAL</div>
-            <div class="print-total-uf" id="pr-total-uf">0,00 <small>UF/mes</small></div>
-            <div class="print-total-clp" id="pr-total-clp">$0 CLP / mes</div>
-          </div>
-          <div style="text-align:right">
-            <div style="color:var(--gold);font-size:11px;font-weight:700;letter-spacing:2px;">TOTAL ANUAL</div>
-            <div style="color:white;font-size:22px;font-weight:700;" id="pr-annual-uf">0,00 UF</div>
-            <div style="color:#8BA3B8;font-size:13px;" id="pr-annual-clp">$0 CLP</div>
-          </div>
+          <div class="print-total-label">TOTAL MENSUAL</div>
+          <div class="print-total-uf" id="pr-total-uf">0,00 <small>UF/mes</small></div>
+          <div class="print-total-clp" id="pr-total-clp">$0 CLP / mes</div>
         </div>
 
         <div class="print-notes" id="pr-notes-section" style="display:none">
@@ -1131,6 +1141,7 @@ function setPrice(id, val) {
 // ── RECALC ──────────────────────────────────────────────────────────
 function recalc() {
   const ufVal = getUF();
+  const summaryEl = document.getElementById('summary-lines');
 
   // Update plan CLP hints
   PLANS.forEach((p, i) => {
@@ -1144,72 +1155,68 @@ function recalc() {
     if (el) el.textContent = `$${fmt(addonState[a.id].uf * ufVal)} CLP`;
   });
 
-  // Custom items always shown even without plan
   const customActive = customItems.filter(x => x.name.trim() || x.uf > 0);
 
   if (selectedPlan === null) {
-    // Show only custom items if no plan selected
     if (customActive.length === 0) return;
-    const summaryEl = document.getElementById('summary-lines');
-    let totalUF = 0;
-    const lines = [];
-    customActive.forEach(item => {
+    let subtotalUF = 0;
+    summaryEl.innerHTML = customActive.map(item => {
       const lineUF = item.uf * item.qty;
-      lines.push({ lbl: (item.name.trim() || 'Ítem sin nombre') + (item.qty > 1 ? ` (×${item.qty})` : ''), val: `${fmtUF(lineUF)} UF` });
-      totalUF += lineUF;
-    });
-    summaryEl.innerHTML = lines.map(l =>
-      `<div class="summary-line"><span class="lbl">${l.lbl}</span><span class="val">${l.val}</span></div>`
-    ).join('');
-    document.getElementById('total-uf').textContent = `${fmtUF(totalUF)} UF`;
-    document.getElementById('total-clp').textContent = `$${fmt(totalUF * ufVal)} CLP / mes`;
-    document.getElementById('total-annual').textContent = `Anual: ${fmtUF(totalUF * 12)} UF · $${fmt(totalUF * 12 * ufVal)} CLP`;
+      subtotalUF += lineUF;
+      const lbl = (item.name.trim() || 'Ítem sin nombre') + (item.qty > 1 ? ` (×${item.qty})` : '');
+      return `<div class="summary-line"><span class="lbl">${lbl}</span><span class="val">${fmtUF(lineUF)} UF</span></div>`;
+    }).join('');
+    document.getElementById('total-uf').textContent = `${fmtUF(subtotalUF)} UF`;
+    document.getElementById('total-clp').textContent = `$${fmt(subtotalUF * ufVal)} CLP / mes`;
+    currentTotalUF = subtotalUF;
+    calcCosts();
     return;
   }
 
   const plan = PLANS[selectedPlan];
-  let totalUF = plan.uf;
-  const lines = [];
-  lines.push({ lbl: `${plan.level} — ${plan.name}`, val: `${fmtUF(plan.uf)} UF` });
 
-  // Custom items
+  // ── Grupo BASE: plan + customItems + specialItems → SUBTOTAL
+  let subtotalUF = plan.uf;
+  let html = `<div class="summary-line"><span class="lbl">${plan.level} — ${plan.name}</span><span class="val">${fmtUF(plan.uf)} UF</span></div>`;
+
   customActive.forEach(item => {
     const lineUF = item.uf * item.qty;
-    lines.push({ lbl: (item.name.trim() || 'Ítem sin nombre') + (item.qty > 1 ? ` (×${item.qty})` : ''), val: `+${fmtUF(lineUF)} UF` });
-    totalUF += lineUF;
+    const lbl = (item.name.trim() || 'Ítem sin nombre') + (item.qty > 1 ? ` (×${item.qty})` : '');
+    html += `<div class="summary-line"><span class="lbl">${lbl}</span><span class="val">+${fmtUF(lineUF)} UF</span></div>`;
+    subtotalUF += lineUF;
   });
 
-  let hasAddons = false;
-  ADDONS.forEach(a => {
-    const st = addonState[a.id];
-    if (!st.checked) return;
-    hasAddons = true;
-    const lineUF = st.uf * (a.qty ? st.qty : 1);
-    const addon = ADDONS.find(x => x.id === a.id);
-    const label = addon.qty ? `${a.name} (×${st.qty})` : a.name;
-    lines.push({ lbl: label, val: `+${fmtUF(lineUF)} UF` });
-    totalUF += a.id === 'renta' ? lineUF / 12 : lineUF;
-  });
-
-  // Special items
   specialItems.forEach(item => {
     if (!item.name.trim() && item.uf === 0) return;
     const lineUF = item.uf * item.qty;
-    const label = (item.name.trim() || 'Ítem especial') + (item.qty > 1 ? ` (×${item.qty})` : '');
-    lines.push({ lbl: label, val: `+${fmtUF(lineUF)} UF` });
-    totalUF += lineUF;
+    const lbl = (item.name.trim() || 'Ítem especial') + (item.qty > 1 ? ` (×${item.qty})` : '');
+    html += `<div class="summary-line"><span class="lbl">${lbl}</span><span class="val">+${fmtUF(lineUF)} UF</span></div>`;
+    subtotalUF += lineUF;
   });
 
-  // Render summary
-  const summaryEl = document.getElementById('summary-lines');
-  summaryEl.innerHTML = lines.map(l =>
-    `<div class="summary-line"><span class="lbl">${l.lbl}</span><span class="val">${l.val}</span></div>`
-  ).join('');
+  // ── Grupo ADDONS
+  let addonUF = 0;
+  const addonLines = [];
+  ADDONS.forEach(a => {
+    const st = addonState[a.id];
+    if (!st.checked) return;
+    const lineUF = st.uf * (a.qty ? st.qty : 1);
+    addonLines.push({ lbl: a.qty ? `${a.name} (×${st.qty})` : a.name, val: `+${fmtUF(lineUF)} UF` });
+    addonUF += a.id === 'renta' ? lineUF / 12 : lineUF;
+  });
 
+  if (addonLines.length > 0) {
+    html += `<div class="summary-subtotal"><span class="lbl">SUBTOTAL BASE</span><span class="val">${fmtUF(subtotalUF)} UF</span></div>`;
+    html += addonLines.map(l =>
+      `<div class="summary-line"><span class="lbl">${l.lbl}</span><span class="val">${l.val}</span></div>`
+    ).join('');
+  }
+
+  summaryEl.innerHTML = html;
+
+  const totalUF = subtotalUF + addonUF;
   document.getElementById('total-uf').textContent = `${fmtUF(totalUF)} UF`;
   document.getElementById('total-clp').textContent = `$${fmt(totalUF * ufVal)} CLP / mes`;
-  document.getElementById('total-annual').textContent =
-    `Anual: ${fmtUF(totalUF * 12)} UF · $${fmt(totalUF * 12 * ufVal)} CLP`;
   currentTotalUF = totalUF;
   calcCosts();
 }
@@ -1275,23 +1282,50 @@ function generatePrint() {
     featuresWrap.style.display = 'none';
   }
 
-  // Add-ons + special items
-  let totalUF = plan.uf;
-  const activeAddons = [];
+  // ── Ítems especiales del cliente (van con la base → SUBTOTAL)
+  const customActive = customItems.filter(x => x.name.trim() || x.uf > 0);
+  let subtotalUF = plan.uf;
+  const specialActive = [];
 
+  customActive.forEach(item => {
+    const lineUF = item.uf * item.qty;
+    specialActive.push({ name: (item.name.trim() || 'Ítem sin nombre') + (item.qty > 1 ? ` (×${item.qty})` : ''), uf: lineUF });
+    subtotalUF += lineUF;
+  });
+  specialItems.forEach(item => {
+    if (!item.name.trim() && item.uf === 0) return;
+    const lineUF = item.uf * item.qty;
+    specialActive.push({ name: (item.name.trim() || 'Ítem especial') + (item.qty > 1 ? ` (×${item.qty})` : ''), uf: lineUF });
+    subtotalUF += lineUF;
+  });
+
+  const specialSection  = document.getElementById('pr-special-section');
+  const specialList     = document.getElementById('pr-special-list');
+  const subtotalSection = document.getElementById('pr-subtotal-section');
+  if (specialActive.length > 0) {
+    specialSection.style.display = 'block';
+    specialList.innerHTML = specialActive.map(x =>
+      `<div class="print-addon-row">
+        <span class="print-addon-name">${x.name}</span>
+        <span class="print-addon-price">+${fmtUF(x.uf)} UF</span>
+      </div>`
+    ).join('');
+    subtotalSection.style.display = 'flex';
+    document.getElementById('pr-subtotal-uf').textContent = `${fmtUF(subtotalUF)} UF`;
+  } else {
+    specialSection.style.display = 'none';
+    subtotalSection.style.display = 'none';
+  }
+
+  // ── Servicios adicionales (addons)
+  let addonUF = 0;
+  const activeAddons = [];
   ADDONS.forEach(a => {
     const st = addonState[a.id];
     if (!st.checked) return;
     const lineUF = st.uf * (a.qty ? st.qty : 1);
     activeAddons.push({ name: a.qty ? `${a.name} (×${st.qty})` : a.name, uf: lineUF, a });
-    totalUF += a.id === 'renta' ? lineUF / 12 : lineUF;
-  });
-
-  specialItems.forEach(item => {
-    if (!item.name.trim() && item.uf === 0) return;
-    const lineUF = item.uf * item.qty;
-    activeAddons.push({ name: (item.name.trim() || 'Ítem especial') + (item.qty > 1 ? ` (×${item.qty})` : ''), uf: lineUF });
-    totalUF += lineUF;
+    addonUF += a.id === 'renta' ? lineUF / 12 : lineUF;
   });
 
   const addonsSection = document.getElementById('pr-addons-section');
@@ -1301,7 +1335,7 @@ function generatePrint() {
     addonsList.innerHTML = activeAddons.map(x =>
       `<div class="print-addon-row">
         <span class="print-addon-name">${x.name}</span>
-        <span class="print-addon-price">${fmtUF(x.uf)} UF${x.a && x.a.id==='renta'?' (anual, equiv. '+fmtUF(x.uf/12)+' UF/mes)':''}</span>
+        <span class="print-addon-price">+${fmtUF(x.uf)} UF${x.a && x.a.id==='renta'?' (anual, equiv. '+fmtUF(x.uf/12)+' UF/mes)':''}</span>
       </div>`
     ).join('');
   } else {
@@ -1309,10 +1343,9 @@ function generatePrint() {
   }
 
   // Totals
-  document.getElementById('pr-total-uf').innerHTML  = `${fmtUF(totalUF)} <small>UF/mes</small>`;
+  const totalUF = subtotalUF + addonUF;
+  document.getElementById('pr-total-uf').innerHTML   = `${fmtUF(totalUF)} <small>UF/mes</small>`;
   document.getElementById('pr-total-clp').textContent = `$${fmt(totalUF * ufVal)} CLP / mes`;
-  document.getElementById('pr-annual-uf').textContent  = `${fmtUF(totalUF * 12)} UF`;
-  document.getElementById('pr-annual-clp').textContent = `$${fmt(totalUF * 12 * ufVal)} CLP`;
 
   // Notes
   const notas = document.getElementById('notas').value.trim();
