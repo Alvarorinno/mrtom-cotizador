@@ -319,6 +319,8 @@
     .btn-primary:hover { background: #0a141f; }
     .btn-outline { background: transparent; border: 2px solid var(--navy); color: var(--navy); }
     .btn-outline:hover { background: var(--navy); color: var(--white); }
+    .btn-save { background: var(--gold); color: var(--navy); }
+    .btn-save:hover { background: #b8943e; }
 
     /* ── PRINT PREVIEW ──────────────────────────────────────────── */
     #print-area {
@@ -520,6 +522,73 @@
       /* Resumen reunión */
       #pr-resumen-text { font-size: 11px; padding: 8px 12px; }
     }
+    /* ── TABS ───────────────────────────────────────────────────── */
+    .tab-nav {
+      display: flex;
+      background: var(--navy);
+      padding: 0 40px;
+      gap: 4px;
+      border-bottom: 3px solid #1E3248;
+    }
+    .tab-btn {
+      padding: 13px 20px;
+      font-size: 13px; font-weight: 600;
+      color: #8BA3B8;
+      background: none; border: none;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -3px;
+      cursor: pointer; letter-spacing: 0.3px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .tab-btn:hover { color: var(--white); }
+    .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+    .tab-badge {
+      background: var(--gold); color: var(--navy);
+      font-size: 10px; font-weight: 700;
+      padding: 2px 7px; border-radius: 10px; margin-left: 6px;
+    }
+
+    /* ── HISTORIAL ──────────────────────────────────────────────── */
+    #view-historial { padding: 40px; max-width: 900px; margin: 0 auto; }
+    .hist-empty { text-align: center; color: var(--muted); padding: 80px 0; font-size: 15px; line-height: 2; }
+    .hist-grid { display: flex; flex-direction: column; gap: 14px; }
+    .hist-card {
+      background: var(--white);
+      border-radius: 14px;
+      padding: 22px 26px;
+      border: 1.5px solid var(--border);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: start;
+    }
+    .hist-card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+    .hist-cot-num { font-size: 12px; font-weight: 700; color: var(--gold); letter-spacing: 1px; }
+    .hist-date { font-size: 12px; color: var(--muted); }
+    .hist-client { font-size: 17px; font-weight: 700; color: var(--navy); }
+    .hist-empresa { font-size: 13px; color: var(--muted); margin-top: 2px; }
+    .hist-meta { display: flex; gap: 24px; margin-top: 14px; flex-wrap: wrap; }
+    .hist-meta-item { display: flex; flex-direction: column; gap: 3px; }
+    .hist-meta-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+    .hist-meta-val { font-size: 14px; font-weight: 700; color: var(--navy); }
+    .hist-mg-good { color: #166534; }
+    .hist-mg-warn { color: #92400E; }
+    .hist-mg-bad  { color: #991B1B; }
+    .hist-resumen { margin-top: 10px; font-size: 12px; color: var(--muted); font-style: italic; }
+    .hist-card-actions { display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
+    .btn-hist-load {
+      background: var(--navy); color: var(--white);
+      padding: 8px 16px; border-radius: 8px;
+      font-size: 12px; font-weight: 600; cursor: pointer; border: none;
+    }
+    .btn-hist-load:hover { background: var(--navy2); }
+    .btn-hist-del {
+      background: none; border: 1.5px solid #FCA5A5; color: #B91C1C;
+      padding: 8px 16px; border-radius: 8px;
+      font-size: 12px; font-weight: 600; cursor: pointer;
+    }
+    .btn-hist-del:hover { background: #FEE2E2; }
+    .hist-section-title { font-size: 11px; letter-spacing: 3px; color: var(--gold); font-weight: 700; margin-bottom: 20px; }
   </style>
 </head>
 <body>
@@ -545,7 +614,13 @@
   <div class="header-badge">USO INTERNO · COTIZADOR</div>
 </header>
 
+<div class="tab-nav">
+  <button class="tab-btn active" id="tab-cotizar" onclick="switchTab('cotizar')">📋 Cotizar</button>
+  <button class="tab-btn" id="tab-historial" onclick="switchTab('historial')">📁 Historial <span class="tab-badge" id="hist-badge">0</span></button>
+</div>
+
 <main>
+<div id="view-cotizar">
 
   <!-- UF VALUE -->
   <div class="uf-box">
@@ -665,6 +740,7 @@
 
     <div class="actions no-print">
       <button class="btn btn-outline" onclick="resetForm()">Limpiar</button>
+      <button class="btn btn-save" onclick="saveQuote()">💾 Guardar</button>
       <button class="btn btn-primary" onclick="generatePrint()">Generar cotización →</button>
     </div>
   </section>
@@ -940,7 +1016,15 @@
     </div>
   </section>
 
+</div><!-- /view-cotizar -->
 </main>
+
+<div id="view-historial" style="display:none">
+  <div style="max-width:900px;margin:0 auto;padding:40px">
+    <div class="hist-section-title">HISTORIAL DE COTIZACIONES</div>
+    <div id="hist-list"><div class="hist-empty">Sin cotizaciones guardadas aún.<br>Cotiza y presiona 💾 Guardar para verlas aquí.</div></div>
+  </div>
+</div>
 
 <script>
 // ── SPECIAL ITEMS (3 fixed editable rows in section 03) ─────────────
@@ -1471,6 +1555,200 @@ function calcCosts() {
     if (margenPctEl) margenPctEl.textContent = 'ingresa precio cotizado';
   }
 }
+
+// ── TABS ────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.getElementById('view-cotizar').style.display   = tab === 'cotizar'   ? '' : 'none';
+  document.getElementById('view-historial').style.display = tab === 'historial' ? '' : 'none';
+  document.getElementById('tab-cotizar').classList.toggle('active',   tab === 'cotizar');
+  document.getElementById('tab-historial').classList.toggle('active', tab === 'historial');
+  if (tab === 'historial') renderHistory();
+}
+
+// ── HISTORIAL ────────────────────────────────────────────────────────
+const HIST_KEY = 'mrtom_historial';
+
+function getHistory()      { try { return JSON.parse(localStorage.getItem(HIST_KEY) || '[]'); } catch(e) { return []; } }
+function saveHistory(arr)  { localStorage.setItem(HIST_KEY, JSON.stringify(arr)); updateHistBadge(); }
+function updateHistBadge() { const b = document.getElementById('hist-badge'); if (b) b.textContent = getHistory().length; }
+
+function saveQuote() {
+  if (selectedPlan === null) { alert('Selecciona un plan antes de guardar.'); return; }
+  const ufVal = getUF();
+  const plan  = PLANS[selectedPlan];
+
+  if (!currentQuoteCode) {
+    const year    = new Date().getFullYear();
+    const counter = parseInt(localStorage.getItem('mrtom_cot_num') || '0') + 1;
+    localStorage.setItem('mrtom_cot_num', counter);
+    currentQuoteCode = `COT-${year}-${String(counter).padStart(3,'0')}`;
+  }
+
+  const getV = id => document.getElementById(id)?.value   || '';
+  const getN = id => parseFloat(document.getElementById(id)?.value) || 0;
+  const getT = id => document.getElementById(id)?.textContent || '';
+
+  // Calcular subtotal + margen antes de guardar
+  const pctMatch = getT('mg-margen-pct').match(/([\d.]+)%/);
+  const margenPct = pctMatch ? parseFloat(pctMatch[1]) : null;
+
+  const record = {
+    id:        Date.now(),
+    savedAt:   new Date().toISOString(),
+    quoteCode: currentQuoteCode,
+    // Sección 1
+    nombre:   getV('c-nombre'), empresa:  getV('c-empresa'),
+    fecha:    getV('c-fecha'),  resumen:  getV('c-resumen'),
+    // Plan
+    planIdx:   selectedPlan, planLevel: plan.level,
+    planName:  plan.name,    planUF:    plan.uf,
+    // Ítems
+    specialItems: specialItems.map(x => ({...x})),
+    customItems:  customItems.map(x => ({...x})),
+    // Addons
+    addonSnapshot: Object.fromEntries(Object.entries(addonState).map(([k,v]) => [k, {...v}])),
+    // Sección 5
+    notas:    getV('notas'),
+    ufValue:  ufVal,
+    totalUF:  currentTotalUF,
+    totalCLP: currentTotalUF * ufVal,
+    margenPct,
+    // Costos internos
+    costs: {
+      ccSueldo:    getN('cc-rate'),       ccHContab:   getN('cc-h-contab'),
+      ccPContab:   getV('cc-p-contab'),   ccHF29:      getN('cc-h-f29'),
+      ccPF29:      getV('cc-p-f29'),      ccHReunion:  getN('cc-h-reunion'),
+      ccPReunion:  getV('cc-p-reunion'),
+      caSueldo:    getN('ca-rate'),       caHAsesoria: getN('ca-h-asesoria'),
+      caPAsesoria: getV('ca-p-asesoria'), caHTrabajo:  getN('ca-h-trabajo'),
+      caPTrabajo:  getV('ca-p-trabajo'),  opMov:       getN('op-mov'),
+      costosTxt:   getT('mg-costos'),     margenTxt:   getT('mg-margen'),
+      margenPctTxt:getT('mg-margen-pct'),
+    }
+  };
+
+  const hist = getHistory();
+  const idx  = hist.findIndex(h => h.quoteCode === currentQuoteCode);
+  if (idx >= 0) hist[idx] = record; else hist.unshift(record);
+  saveHistory(hist);
+
+  const btn = document.querySelector('[onclick="saveQuote()"]');
+  if (btn) { const t = btn.textContent; btn.textContent = '✓ Guardado'; setTimeout(() => btn.textContent = t, 1600); }
+}
+
+function deleteQuote(id) {
+  if (!confirm('¿Eliminar esta cotización del historial?')) return;
+  saveHistory(getHistory().filter(h => h.id !== id));
+  renderHistory();
+}
+
+function loadQuote(id) {
+  const h = getHistory().find(x => x.id === id);
+  if (!h) return;
+  if (!confirm('¿Cargar esta cotización? Se reemplazará el formulario actual.')) return;
+
+  resetForm();
+
+  const setV = (id, v) => { const el = document.getElementById(id); if (el && v !== undefined && v !== null && v !== 0) el.value = v; };
+
+  setV('c-nombre',  h.nombre);  setV('c-empresa', h.empresa);
+  setV('c-fecha',   h.fecha);   setV('c-resumen', h.resumen);
+  setV('uf-value',  h.ufValue); setV('notas',     h.notas);
+
+  if (h.planIdx !== null && h.planIdx !== undefined) selectPlan(h.planIdx);
+
+  if (h.specialItems) h.specialItems.forEach((item, i) => { if (i < specialItems.length) Object.assign(specialItems[i], item); });
+  renderSpecialItems();
+
+  if (h.customItems?.length) {
+    customItems = h.customItems.map(x => ({...x}));
+    customIdCounter = Math.max(...customItems.map(x => x.id||0), 0);
+    renderCustomItems();
+  }
+
+  if (h.addonSnapshot) {
+    Object.entries(h.addonSnapshot).forEach(([aid, st]) => {
+      addonState[aid] = {...st};
+      const chk = document.getElementById('chk-' + aid);
+      if (chk) {
+        chk.checked = st.checked;
+        document.getElementById('addon-row-' + aid)?.classList.toggle('active', st.checked);
+        if (st.qty) { const qEl = document.querySelector(`#addon-row-${aid} input[type=number]`); if (qEl) qEl.value = st.qty; }
+      }
+    });
+  }
+
+  if (h.costs) {
+    const c = h.costs;
+    setV('cc-rate',       c.ccSueldo);    setV('cc-h-contab',  c.ccHContab);
+    setV('cc-p-contab',   c.ccPContab);   setV('cc-h-f29',     c.ccHF29);
+    setV('cc-p-f29',      c.ccPF29);      setV('cc-h-reunion', c.ccHReunion);
+    setV('cc-p-reunion',  c.ccPReunion);  setV('ca-rate',      c.caSueldo);
+    setV('ca-h-asesoria', c.caHAsesoria); setV('ca-p-asesoria',c.caPAsesoria);
+    setV('ca-h-trabajo',  c.caHTrabajo);  setV('ca-p-trabajo', c.caPTrabajo);
+    setV('op-mov',        c.opMov);
+  }
+
+  currentQuoteCode = h.quoteCode;
+  recalc();
+  switchTab('cotizar');
+}
+
+function renderHistory() {
+  const container = document.getElementById('hist-list');
+  const hist      = getHistory();
+  if (!hist.length) {
+    container.innerHTML = '<div class="hist-empty">Sin cotizaciones guardadas aún.<br>Cotiza y presiona 💾 Guardar para verlas aquí.</div>';
+    return;
+  }
+  const fmtCLP = n => n ? `$${Math.round(n).toLocaleString('es-CL')}` : '—';
+  const fmtUF2 = n => n ? n.toFixed(2).replace('.',',') + ' UF' : '—';
+  container.innerHTML = '<div class="hist-grid">' + hist.map(h => {
+    const date = new Date(h.savedAt).toLocaleDateString('es-CL', {day:'numeric',month:'short',year:'numeric'});
+    const mgCls = h.margenPct == null ? '' : h.margenPct >= 40 ? 'hist-mg-good' : h.margenPct >= 20 ? 'hist-mg-warn' : 'hist-mg-bad';
+    const mgTxt = h.margenPct != null ? `${h.margenPct.toFixed(1)}% ${h.costs?.margenTxt ? '('+h.costs.margenTxt+')' : ''}` : '—';
+    return `<div class="hist-card">
+      <div>
+        <div class="hist-card-header">
+          <span class="hist-cot-num">${h.quoteCode||'—'}</span>
+          <span class="hist-date">${date}</span>
+        </div>
+        <div class="hist-client">${h.nombre||'Sin nombre'}</div>
+        <div class="hist-empresa">${h.empresa||'Sin empresa'}</div>
+        <div class="hist-meta">
+          <div class="hist-meta-item">
+            <span class="hist-meta-label">Plan</span>
+            <span class="hist-meta-val">${h.planLevel||'—'}</span>
+          </div>
+          <div class="hist-meta-item">
+            <span class="hist-meta-label">Total UF/mes</span>
+            <span class="hist-meta-val">${fmtUF2(h.totalUF)}</span>
+          </div>
+          <div class="hist-meta-item">
+            <span class="hist-meta-label">Total CLP/mes</span>
+            <span class="hist-meta-val">${fmtCLP(h.totalCLP)}</span>
+          </div>
+          ${h.costs?.costosTxt ? `<div class="hist-meta-item">
+            <span class="hist-meta-label">Costo estimado</span>
+            <span class="hist-meta-val">${h.costs.costosTxt}</span>
+          </div>` : ''}
+          <div class="hist-meta-item">
+            <span class="hist-meta-label">Margen bruto</span>
+            <span class="hist-meta-val ${mgCls}">${mgTxt}</span>
+          </div>
+        </div>
+        ${h.resumen ? `<div class="hist-resumen">"${h.resumen.substring(0,140)}${h.resumen.length>140?'…':''}"</div>` : ''}
+      </div>
+      <div class="hist-card-actions">
+        <button class="btn-hist-load" onclick="loadQuote(${h.id})">Cargar</button>
+        <button class="btn-hist-del"  onclick="deleteQuote(${h.id})">Eliminar</button>
+      </div>
+    </div>`;
+  }).join('') + '</div>';
+}
+
+// Init badge
+updateHistBadge();
 
 function resetForm() {
   selectedPlan = null;
